@@ -1,0 +1,11 @@
+{
+  "cash jam": "Clean dispenser area and check cassette alignment.",
+  "dispenser error": "Check dispenser motor and sensor connections.",
+  "unable to dispense": "Verify cash cassette presence and retry transaction.",
+  "communication failure": "Check router / network / VPN connection.",
+  "card reader error": "Clean or replace card reader module.",
+  "receipt printer error": "Refill paper or check printer sensor.",
+  "power": "Inspect UPS and power supply connections.",
+  "cassette empty": "Refill cassette and confirm cash inventory.",
+  "Note Pick time out": "Physically ensure notes were properly panned and loaded."
+}

@@ -18,7 +18,10 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CUSTOM_ERROR_FILE = os.path.join(BASE_DIR, "custom_errors.txt")
 ACTION_POINTS_FILE = os.path.join(BASE_DIR, "action_points.json")
 ERROR_SOLUTIONS_FILE = os.path.join(BASE_DIR, "error_solutions.json")
-BACKGROUND_FILE = os.path.join(BASE_DIR, "background.jpg")
+# Accept whichever of these actually exists, in this priority order.
+BACKGROUND_CANDIDATES = [
+    ("background.jpg", "jpeg"), ("background.jpeg", "jpeg"), ("background.png", "png"),
+]
 
 DEFAULT_ERRORS = [
     "cash jam", "dispenser error", "card reader error", "communication failure",
@@ -79,23 +82,26 @@ ERROR_KEYWORDS = list(dict.fromkeys(DEFAULT_ERRORS + st.session_state.custom_err
 
 
 # ----------------- analysis helpers -----------------
-def add_bg(image_path):
-    if not os.path.exists(image_path):
-        return
-    with open(image_path, "rb") as f:
-        data = base64.b64encode(f.read()).decode()
-    st.markdown(
-        f"""
-        <style>
-        .stApp {{
-            background-image: url("data:image/jpg;base64,{data}");
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-        }}
-        </style>
-        """, unsafe_allow_html=True
-    )
+def add_bg():
+    for filename, mime in BACKGROUND_CANDIDATES:
+        path = os.path.join(BASE_DIR, filename)
+        if os.path.exists(path):
+            with open(path, "rb") as f:
+                data = base64.b64encode(f.read()).decode()
+            st.markdown(
+                f"""
+                <style>
+                .stApp {{
+                    background-image: url("data:image/{mime};base64,{data}");
+                    background-size: cover;
+                    background-position: center;
+                    background-attachment: fixed;
+                }}
+                </style>
+                """, unsafe_allow_html=True
+            )
+            return
+    # No background file found — app still renders fine with the plain theme below.
 
 
 def extract_date_from_filename(filename):
@@ -243,7 +249,7 @@ def export_excel_bytes(df):
 
 
 # ----------------- styling -----------------
-add_bg(BACKGROUND_FILE)
+add_bg()
 
 st.markdown("""
 <style>
@@ -288,12 +294,14 @@ uploaded_files = st.file_uploader(
 
 # ----------------- main logic -----------------
 if uploaded_files:
-    log_files = expand_zip_files(uploaded_files)
+    with st.spinner("Unpacking uploaded files..."):
+        log_files = expand_zip_files(uploaded_files)
     if not log_files:
         st.warning("No .log or .txt files were found inside the uploaded zip(s).")
         st.stop()
     st.info(f"Processing {len(log_files)} log file(s)...")
-    df_results = analyze_uploaded_logs(log_files, ERROR_KEYWORDS, st.session_state.action_points)
+    with st.spinner(f"Analyzing {len(log_files)} log file(s)..."):
+        df_results = analyze_uploaded_logs(log_files, ERROR_KEYWORDS, st.session_state.action_points)
 
     st.success("Logs analyzed successfully ✅")
     st.dataframe(df_results, use_container_width=True, height=280)

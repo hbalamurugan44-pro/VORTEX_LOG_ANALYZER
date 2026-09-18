@@ -275,6 +275,14 @@ html, body, [class*="css"], .stApp { color: white !important; font-family: "Sego
 .stDownloadButton > button:hover {
     background-color: #003C94 !important;
 }
+/* Streamlit's warning/info/success/error boxes have their own colored backgrounds
+   (yellow/blue/green/red) and need dark text for contrast — override the blanket
+   white-text rule above specifically for these. */
+.stAlert, .stAlert p, .stAlert span, .stAlert div,
+[data-testid="stNotificationContentWarning"], [data-testid="stNotificationContentInfo"],
+[data-testid="stNotificationContentSuccess"], [data-testid="stNotificationContentError"] {
+    color: #111 !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
